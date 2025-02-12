@@ -1,7 +1,8 @@
-import { UserRole } from "@prisma/client";
+import { type User, UserRole } from "@prisma/client";
 import NextAuth from "next-auth";
 import authConfig from "./auth.config";
 import { getUserById } from "./services/user.service";
+import { getSafeUserDetails } from "./utils/user";
 
 export const {
 	handlers: { GET, POST },
@@ -14,6 +15,7 @@ export const {
 		signOut: "/auth/register",
 		error: "/auth/error",
 	},
+
 	events: {},
 	callbacks: {
 		async jwt({ token }) {
@@ -22,6 +24,7 @@ export const {
 			}
 			const existingUser = await getUserById(token.sub);
 			token.role = existingUser?.role || UserRole.USER;
+			token.user = getSafeUserDetails(existingUser as User);
 			return token;
 		},
 		async session({ session, token }) {

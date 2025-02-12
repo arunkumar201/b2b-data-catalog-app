@@ -5,8 +5,6 @@ import { ZUserLogin } from "./schema";
 import { getUserByEmail } from "./services/user.service";
 import { getSafeUserDetails } from "./utils/user";
 
-export const runtime = "nodejs";
-
 export default {
 	providers: [
 		Credentials({
@@ -19,17 +17,20 @@ export default {
 			async authorize(credential) {
 				const validatedFelids = ZUserLogin.safeParse(credential);
 				if (!validatedFelids.success) {
-					return { error: "Invalid Fields" };
+					throw new Error("Invalid input credentials");
 				}
 				const { email, password } = validatedFelids.data;
-
 				const user = await getUserByEmail(email);
 
-				if (!user || !user.password) return null;
+				if (!user || !user.password) {
+					return null;
+				}
 				const isPasswordValid = await bcrypt.compare(password, user.password);
+
 				if (isPasswordValid) {
 					return getSafeUserDetails(user);
 				}
+
 				return null;
 			},
 		}),

@@ -1,49 +1,55 @@
 import { db } from "@/lib/db";
 import { ERROR_MESSAGE } from "@/messages";
-import { ZRegisterUser } from "@/schema";
+import { ZRegisterUser } from "@/schema/auth";
 import { getUserByEmail } from "@/services/user.service";
+import { User } from "@prisma/client";
 import bcrypt from "bcryptjs";
-import type { NextApiRequest, NextApiResponse } from "next";
+import { type NextRequest, NextResponse } from "next/server";
 
-const registerUserHandler = async (
-	req: NextApiRequest,
-	res: NextApiResponse,
-) => {
-	if (req.method !== "POST") {
-		return res.status(405).json({ error: ERROR_MESSAGE.METHOD_NOT_ALLOWED });
-	}
-
-	const parsed = ZRegisterUser.safeParse(req.body);
+export async function POST(req: NextRequest) {
+	const formData = await req.json();
+	const parsed = ZRegisterUser.safeParse(formData);
 
 	if (!parsed.success) {
-		return res
-			.status(400)
-			.json({ error: "Invalid Input Data", details: parsed.error.errors[0] });
+		return NextResponse.json(
+			{
+				status: false,
+				message: "invalid input form data",
+			},
+			{ status: 400 },
+		);
 	}
 
-	const { email, password, name } = parsed.data;
+	const { email, password, firstName, lastName } = parsed.data;
 
 	try {
 		const existingUser = await getUserByEmail(email);
 		if (existingUser) {
-			return res.status(409).json({ error: "Email already taken" });
+			return NextResponse.json(
+				{ status: false, message: "Email already taken" },
+				{ status: 400 },
+			);
 		}
-
 		const hashedPassword = await bcrypt.hash(password, 10);
+		await db.user.create({
+			data: {
+				email,
+				password: hashedPassword,
+				firstName,
+				lastName,
+				role: email === "ak201@gmail.com" ? "ADMIN" : "USER",
+			},
+		});
 
-		const userData = {
-			email,
-			password: hashedPassword,
-			name,
-		};
-
-		await db.user.create({ data: userData });
-
-		return res.status(201).json({ message: "User registered successfully" });
+		return NextResponse.json(
+			{ status: true, message: "User created successfully" },
+			{ status: 201 },
+		);
 	} catch (error) {
 		console.error(`Error while creating user: ${error}`);
-		return res.status(500).json({ error: ERROR_MESSAGE.INTERNAL_SERVER_ERROR });
+		return NextResponse.json(
+			{ status: false, message: ERROR_MESSAGE.INTERNAL_SERVER_ERROR },
+			{ status: 500 },
+		);
 	}
-};
-
-export default registerUserHandler;
+}
