@@ -8,7 +8,7 @@
     "start": "next start",
     "prepare": "husky install",
     "pre-commit": "lint-staged",
-    "postinstall": "npx prisma generate",
+    "postinstall": "npx prisma generate && npx tsx ./src/lib/seed.ts",
     "prisma:generate": "npx prisma generate",
     "prisma:migrate": "npx prisma migrate dev",
     "prisma:studio": "npx prisma studio",

@@ -1,3 +1,4 @@
+import ProductList from "@/components/ProductList";
 import { authOptions } from "@/lib/authOption";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
@@ -16,5 +17,11 @@ export default async function UserDashboard({ params }: IUserDashboard) {
 		redirect(`/dashboard/${session.user.id}`);
 	}
 
-	return <div>wlecome User Dashboard</div>;
+	return (
+		<>
+			<div className="flex flex-col items-center justify-center gap-4 p-16">
+				<ProductList />
+			</div>
+		</>
+	);
 }
