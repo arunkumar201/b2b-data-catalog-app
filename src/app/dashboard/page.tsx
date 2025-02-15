@@ -1,10 +1,9 @@
-import { auth } from "@/auth";
+import { authOptions } from "@/lib/authOption";
+import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 
 const DashboardPage = async () => {
-	const session = await auth();
-
-	console.debug("🚀 ~ DashboardPage ~ session:", session);
+	const session = await getServerSession(authOptions);
 
 	if (!session) {
 		redirect("/auth/login");

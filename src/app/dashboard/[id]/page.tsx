@@ -1,4 +1,5 @@
-import { auth } from "@/auth";
+import { authOptions } from "@/lib/authOption";
+import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 
 interface IUserDashboard {
@@ -6,12 +7,14 @@ interface IUserDashboard {
 }
 export default async function UserDashboard({ params }: IUserDashboard) {
 	const { id } = await params;
-	const session = await auth();
+	const session = await getServerSession(authOptions);
 	if (!session) {
 		return redirect("/auth/login");
 	}
+
 	if (session.user.id !== id) {
-		return redirect("/dashboard");
+		redirect(`/dashboard/${session.user.id}`);
 	}
+
 	return <div>wlecome User Dashboard</div>;
 }

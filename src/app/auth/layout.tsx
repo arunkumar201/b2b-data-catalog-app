@@ -1,7 +1,15 @@
 import { Button } from "@/components/ui/button";
+import { authOptions } from "@/lib/authOption";
+import { getServerSession } from "next-auth";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
-const AuthLayout = ({ children }: { children: React.ReactNode }) => {
+const AuthLayout = async ({ children }: { children: React.ReactNode }) => {
+	const session = await getServerSession(authOptions);
+	if (session) {
+		redirect(`/dashboard/${session.user.id}`);
+	}
+
 	return (
 		<div className="min-h-screen flex flex-col h-screen">
 			<header className="bg-primary text-white p-4 flex flex-row items-center justify-center w-full">

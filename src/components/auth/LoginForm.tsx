@@ -19,7 +19,7 @@ import { useRouter } from "next/navigation";
 import type React from "react";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { ZodError, boolean } from "zod";
+import { ZodError } from "zod";
 import { FormField } from "../FormField";
 
 export const LoginForm = () => {
@@ -39,16 +39,20 @@ export const LoginForm = () => {
 		setSubmitError("");
 
 		try {
-			const validatedData = loginSchema.parse(formData);
+			const validatedData = await loginSchema.parseAsync(formData);
+
 			const result = await signIn("credentials", {
 				email: validatedData.email,
 				password: validatedData.password,
+				redirect: false,
 			});
+
 			if (!result?.ok) {
 				toast.error("Failed to sign in");
 				setSubmitError("Invalid credentials");
 				return;
 			}
+
 			toast.success("Signed in successfully");
 			router.push("/dashboard");
 		} catch (error) {
