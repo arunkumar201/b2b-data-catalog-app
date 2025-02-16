@@ -1,3 +1,4 @@
+import ProductFilter from "@/components/ProductFilter";
 import ProductList from "@/components/ProductList";
 import { authOptions } from "@/lib/authOption";
 import { getServerSession } from "next-auth";
@@ -19,7 +20,8 @@ export default async function UserDashboard({ params }: IUserDashboard) {
 
 	return (
 		<>
-			<div className="flex flex-col items-center justify-center gap-4 p-16">
+			<div className="flex flex-col items-center justify-center gap-2 p-2 md:p-16">
+				<ProductFilter />
 				<ProductList />
 			</div>
 		</>

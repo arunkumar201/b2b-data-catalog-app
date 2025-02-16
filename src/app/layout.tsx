@@ -4,7 +4,9 @@ import "./globals.css";
 import { authOptions } from "@/lib/authOption";
 import { NextSessionProvider } from "@/providers/NextSessionProvider";
 import { getServerSession } from "next-auth";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { Toaster } from "react-hot-toast";
+
 const geistSans = Geist({
 	variable: "--font-geist-sans",
 	subsets: ["latin"],
@@ -28,14 +30,16 @@ export default async function RootLayout({
 	const session = await getServerSession(authOptions);
 	return (
 		<html lang="en">
-			<NextSessionProvider session={session}>
-				<body
-					className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-				>
-					{children}
-					<Toaster position="bottom-right" />
-				</body>
-			</NextSessionProvider>
+			<NuqsAdapter>
+				<NextSessionProvider session={session}>
+					<body
+						className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+					>
+						{children}
+						<Toaster position="bottom-right" />
+					</body>
+				</NextSessionProvider>
+			</NuqsAdapter>
 		</html>
 	);
 }

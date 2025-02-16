@@ -7,7 +7,7 @@
 	},
 	"files": {
 		"ignoreUnknown": false,
-		"ignore": []
+		"ignore": ["node_modules"]
 	},
 	"formatter": {
 		"enabled": true,
@@ -21,6 +21,7 @@
 		"rules": {
 			"recommended": true,
 			"a11y": {
+				"useButtonType": "off",
 				"noAriaUnsupportedElements": "warn",
 				"noBlankTarget": "error",
 				"useAltText": "warn",
@@ -29,7 +30,8 @@
 				"useValidAriaValues": "warn"
 			},
 			"complexity": {
-				"noUselessTypeConstraint": "error"
+				"noUselessTypeConstraint": "error",
+				"useOptionalChain": "off"
 			},
 			"correctness": {
 				"noChildrenProp": "error",
@@ -65,6 +67,7 @@
 				"noDuplicateJsxProps": "error",
 				"noDuplicateObjectKeys": "off",
 				"noDuplicateParameters": "off",
+				"noGlobalIsNan": "off",
 				"noExplicitAny": "error",
 				"noExtraNonNullAssertion": "error",
 				"noFunctionAssign": "off",

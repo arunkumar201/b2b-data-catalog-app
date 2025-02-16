@@ -27,7 +27,7 @@ const PremiumProductCard: FC<{ product: ProductType }> = ({ product }) => {
 			<div className="bg-gradient-to-r from-indigo-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
 			<CardHeader className="relative pb-0">
-				<div className="flex items-center justify-between mb-4">
+				<div className="flex items-center justify-between mb-4 flex-wrap gap-2">
 					<Badge className="bg-indigo-500/10 text-indigo-600  hover:bg-indigo-500/20 transition-colors duration-200">
 						{product.dataCategory}
 					</Badge>
@@ -63,7 +63,7 @@ const PremiumProductCard: FC<{ product: ProductType }> = ({ product }) => {
 				</div>
 
 				<div className="space-y-3">
-					<div>
+					<div className="h-[5rem] overflow-auto">
 						<h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
 							Available Fields
 						</h4>
