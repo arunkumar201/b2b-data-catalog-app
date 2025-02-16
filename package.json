@@ -1,65 +1,66 @@
 {
-  "name": "b2b-data-catalog-app",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build",
-    "start": "next start",
-    "prepare": "husky install",
-    "pre-commit": "lint-staged",
-    "postinstall": "npx prisma generate && npx tsx ./src/lib/seed.ts",
-    "prisma:generate": "npx prisma generate",
-    "prisma:migrate": "npx prisma migrate dev",
-    "prisma:studio": "npx prisma studio",
-    "prisma:push": "npx prisma db push",
-    "lint": "biome check --write ./src",
-    "format": "biome format --write ./src",
-    "lint:format": "pnpm run format && pnpm run lint"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-  },
-  "lint-staged": {
-    "*.js": "pnpm run lint:format",
-    "*.ts": "pnpm run lint:format",
-    "*.tsx": "pnpm run lint:format"
-  },
-  "dependencies": {
-    "@prisma/client": "^6.3.1",
-    "@radix-ui/react-checkbox": "^1.1.4",
-    "@radix-ui/react-dialog": "^1.1.6",
-    "@radix-ui/react-label": "^2.1.2",
-    "@radix-ui/react-select": "^2.1.6",
-    "@radix-ui/react-slider": "^1.2.3",
-    "@radix-ui/react-slot": "^1.1.2",
-    "@t3-oss/env-nextjs": "^0.12.0",
-    "bcryptjs": "^2.4.3",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "lucide-react": "^0.475.0",
-    "next": "15.1.7",
-    "next-auth": "^4.24.11",
-    "nuqs": "^2.3.2",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "react-hot-toast": "^2.5.1",
-    "tailwind-merge": "^3.0.1",
-    "tailwindcss-animate": "^1.0.7",
-    "zod": "^3.24.1"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "1.9.4",
-    "@types/bcryptjs": "^2.4.6",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "husky": "^8.0.0",
-    "lint-staged": "^15.4.3",
-    "postcss": "^8",
-    "tailwindcss": "^3.4.1",
-    "typescript": "^5"
-  }
+	"name": "b2b-data-catalog-app",
+	"version": "0.1.0",
+	"private": true,
+	"scripts": {
+		"dev": "next dev --turbopack",
+		"build": "next build",
+		"start": "next start",
+		"prepare": "husky install",
+		"pre-commit": "lint-staged",
+		"postinstall": "npx prisma generate && npx tsx ./src/lib/seed.ts",
+		"seed:data": "npx tsx ./src/lib/seed.ts",
+		"prisma:generate": "npx prisma generate",
+		"prisma:migrate": "npx prisma migrate dev",
+		"prisma:studio": "npx prisma studio",
+		"prisma:push": "npx prisma db push",
+		"lint": "biome check --write ./src",
+		"format": "biome format --write ./src",
+		"lint:format": "pnpm run format && pnpm run lint"
+	},
+	"husky": {
+		"hooks": {
+			"pre-commit": "lint-staged"
+		}
+	},
+	"lint-staged": {
+		"*.js": "pnpm run lint:format",
+		"*.ts": "pnpm run lint:format",
+		"*.tsx": "pnpm run lint:format"
+	},
+	"dependencies": {
+		"@prisma/client": "^6.3.1",
+		"@radix-ui/react-checkbox": "^1.1.4",
+		"@radix-ui/react-dialog": "^1.1.6",
+		"@radix-ui/react-label": "^2.1.2",
+		"@radix-ui/react-select": "^2.1.6",
+		"@radix-ui/react-slider": "^1.2.3",
+		"@radix-ui/react-slot": "^1.1.2",
+		"@t3-oss/env-nextjs": "^0.12.0",
+		"bcryptjs": "^2.4.3",
+		"class-variance-authority": "^0.7.1",
+		"clsx": "^2.1.1",
+		"lucide-react": "^0.475.0",
+		"next": "15.1.7",
+		"next-auth": "^4.24.11",
+		"nuqs": "^2.3.2",
+		"react": "^19.0.0",
+		"react-dom": "^19.0.0",
+		"react-hot-toast": "^2.5.1",
+		"tailwind-merge": "^3.0.1",
+		"tailwindcss-animate": "^1.0.7",
+		"zod": "^3.24.1"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "1.9.4",
+		"@types/bcryptjs": "^2.4.6",
+		"@types/node": "^20",
+		"@types/react": "^19",
+		"@types/react-dom": "^19",
+		"husky": "^8.0.0",
+		"lint-staged": "^15.4.3",
+		"postcss": "^8",
+		"tailwindcss": "^3.4.1",
+		"typescript": "^5"
+	}
 }
