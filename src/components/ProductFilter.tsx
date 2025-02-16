@@ -23,7 +23,7 @@ import {
 import { useDebounce } from "@/hooks/useDebounce";
 import { wait } from "@/utils";
 import { SlidersHorizontal, X } from "lucide-react";
-import { parseAsString, useQueryState } from "nuqs";
+import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
@@ -32,22 +32,40 @@ const sortOptions = [
 	{ value: "date_asc", label: "Oldest" },
 ];
 
-const MAX_RECORDS = 500000;
-const MIN_RECORDS = 0;
+export const MAX_RECORDS = 50_000;
+export const MIN_RECORDS = 0;
 
 const ProductFilter = () => {
-	const [search, setSearch] = useQueryState("q", parseAsString.withDefault(""));
+	const [page, setPage] = useQueryState(
+		"page",
+		parseAsInteger.withDefault(1).withOptions({
+			shallow: false,
+			throttleMs: 100,
+		}),
+	);
+	const [search, setSearch] = useQueryState(
+		"q",
+		parseAsString.withDefault("").withOptions({
+			shallow: false,
+		}),
+	);
 	const [minRecords, setMinRecords] = useQueryState(
 		"minRecords",
-		parseAsString.withDefault("0"),
+		parseAsString.withDefault("0").withOptions({
+			shallow: false,
+		}),
 	);
 	const [maxRecords, setMaxRecords] = useQueryState(
 		"maxRecords",
-		parseAsString.withDefault(MAX_RECORDS.toString()),
+		parseAsString.withDefault(MAX_RECORDS.toString()).withOptions({
+			shallow: false,
+		}),
 	);
 	const [sortBy, setSortBy] = useQueryState(
 		"sort",
-		parseAsString.withDefault("default"),
+		parseAsString.withDefault("default").withOptions({
+			shallow: false,
+		}),
 	);
 	const [categories, setCategories] = useState<string[]>([]);
 	const [selectedCategories, setSelectedCategories] = useQueryState(
@@ -56,6 +74,7 @@ const ProductFilter = () => {
 			parse: (value) => value.split(","),
 			serialize: (value) => value.join(","),
 			defaultValue: [],
+			shallow: false,
 		},
 	);
 
@@ -91,13 +110,27 @@ const ProductFilter = () => {
 	].filter(Boolean).length;
 
 	const handleClearFilters = () => {
+		if (
+			activeFiltersCount === 0 ||
+			(search === "" &&
+				minRecords === MIN_RECORDS.toString() &&
+				maxRecords === MAX_RECORDS.toString() &&
+				sortBy === "default" &&
+				selectedCategories.length === 0)
+		) {
+			toast.success("No active filters to clear");
+			return;
+		}
 		setLocalSearch("");
-		setLocalselectedCategories([]);
 		setLocalMinRecords(MIN_RECORDS.toString());
 		setLocalMaxRecords(MAX_RECORDS.toString());
 		setLocalSortBy("default");
+		setLocalselectedCategories([]);
+		setPage(1);
+		toast.success("Filters are cleared");
 	};
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	useEffect(() => {
 		const min = Number.parseInt(localMinRecords);
 		const max = Number.parseInt(localMaxRecords);
@@ -113,32 +146,38 @@ const ProductFilter = () => {
 				setLocalMinRecords(MIN_RECORDS.toString());
 			});
 		}
+		setPage(1);
 	}, [maxRecords, minRecords]);
 
 	useEffect(() => {
-		if (!debouncedSearch) return;
 		setSearch(debouncedSearch);
-	}, [debouncedSearch]);
+		setPage(1);
+		setPage(1);
+	}, [debouncedSearch, setSearch, setPage]);
 
 	useEffect(() => {
 		if (!debouncedMinRecords) return;
 		setMinRecords(debouncedMinRecords);
-	}, [debouncedMinRecords]);
+		setPage(1);
+	}, [debouncedMinRecords, setMinRecords, setPage]);
 
 	useEffect(() => {
 		if (!debouncedMaxRecords) return;
 		setMaxRecords(debouncedMaxRecords);
-	}, [debouncedMaxRecords]);
+		setPage(1);
+	}, [debouncedMaxRecords, setMaxRecords, setPage]);
 
 	useEffect(() => {
 		if (!debouncedSortBy) return;
 		setSortBy(debouncedSortBy);
-	}, [debouncedSortBy]);
+		setPage(1);
+	}, [debouncedSortBy, setSortBy, setPage]);
 
 	useEffect(() => {
 		if (!debouncedLocalselectedCategories) return;
 		setSelectedCategories(debouncedLocalselectedCategories);
-	}, [debouncedLocalselectedCategories]);
+		setPage(1);
+	}, [debouncedLocalselectedCategories, setSelectedCategories, setPage]);
 
 	const toggleCategory = (category: string) => {
 		setLocalselectedCategories((prev) => {
@@ -168,8 +207,8 @@ const ProductFilter = () => {
 
 	return (
 		<div className="font-mono w-full space-y-4 p-4 bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800">
-			<div className="flex flex-col lg:flex-row gap-4">
-				<div className="flex-1">
+			<div className="flex flex-col lg:flex-row gap-4 items-center w-full">
+				<div className="flex-1 w-full">
 					<Input
 						type="text"
 						placeholder="Search datasets..."
@@ -193,23 +232,12 @@ const ProductFilter = () => {
 							))}
 						</SelectContent>
 					</Select>
-
-					{activeFiltersCount > 0 && (
-						<Button
-							variant="ghost"
-							onClick={handleClearFilters}
-							className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-						>
-							Clear Filters
-							<X className="ml-2 h-4 w-4" />
-						</Button>
-					)}
 				</div>
 
 				<div className="lg:hidden">
 					<Sheet open={isOpen} onOpenChange={setIsOpen}>
 						<SheetTrigger asChild>
-							<Button variant="outline" className="w-full lg:w-auto">
+							<Button variant="outline" className="w-full">
 								<SlidersHorizontal className="mr-2 h-4 w-4" />
 								Filters
 								{activeFiltersCount > 0 && (
@@ -260,7 +288,7 @@ const ProductFilter = () => {
 											<Input
 												type="range"
 												min="0"
-												max="500000"
+												max={MIN_RECORDS}
 												step="500"
 												value={minRecords || "0"}
 												onChange={(e) => setLocalMinRecords(e.target.value)}
@@ -276,8 +304,8 @@ const ProductFilter = () => {
 											</Label>
 											<Input
 												type="range"
-												min="0"
-												max="500000"
+												min="1"
+												max={MIN_RECORDS}
 												step="500"
 												value={maxRecords || "500000"}
 												onChange={(e) => setLocalMaxRecords(e.target.value)}
@@ -347,8 +375,8 @@ const ProductFilter = () => {
 						</Label>
 						<Input
 							type="range"
-							min="0"
-							max="500000"
+							min={MIN_RECORDS}
+							max={MAX_RECORDS}
 							step="500"
 							value={localMinRecords || "0"}
 							onChange={(e) => setLocalMinRecords(e.target.value)}
@@ -358,83 +386,126 @@ const ProductFilter = () => {
 					<div className="flex-1">
 						<Label className="text-sm text-gray-500">
 							Max Records:{" "}
-							{Number.parseInt(localMaxRecords || "500000").toLocaleString()}
+							{Number.parseInt(localMaxRecords || "50000").toLocaleString()}
 						</Label>
 						<Input
 							type="range"
 							min="0"
-							max="500000"
+							max={MAX_RECORDS}
 							step="500"
-							value={localMaxRecords || "500000"}
+							value={localMaxRecords || "50000"}
 							onChange={(e) => setLocalMaxRecords(e.target.value)}
 							className="w-full"
 						/>
 					</div>
 				</div>
 			</div>
+			<div className="flex justify-between items-center">
+				<div className="flex justify-between items-center">
+					{activeFiltersCount > 0 && (
+						<div className="flex flex-wrap gap-2 pt-2">
+							{localSearch && (
+								<Badge variant="secondary" className="gap-1 w-fit">
+									<span>Search: {search}</span>
+									<button
+										onClick={() => setLocalSearch("")}
+										className="ml-2 hover:text-cyan-900"
+									>
+										<X className="h-3 w-3" />
+									</button>
+								</Badge>
+							)}
+							{localselectedCategories &&
+								localselectedCategories.map((cat) => (
+									<Badge key={cat} variant="secondary" className="gap-1 w-fit">
+										<p className="w-fit">
+											<span>Category:</span>
+											{cat}
+										</p>
+										<button
+											onClick={() => toggleCategory(cat)}
+											className="ml-2 hover:text-cyan-900"
+										>
+											<X className="h-3 w-3" />
+										</button>
+									</Badge>
+								))}
+							{localMinRecords &&
+								localMinRecords !== MIN_RECORDS.toString() && (
+									<Badge variant="secondary" className="gap-1 w-fit">
+										<p className="w-fit">
+											<span className="mr-2">Min Records</span>
+											{Number.parseInt(localMinRecords).toLocaleString()}
+										</p>
+										<button
+											onClick={() => setLocalMinRecords(MIN_RECORDS.toString())}
+											className="ml-2 hover:text-cyan-900"
+										>
+											<X className="h-3 w-3" />
+										</button>
+									</Badge>
+								)}
 
-			{activeFiltersCount > 0 && (
-				<div className="flex flex-wrap gap-2 pt-2">
-					{localSearch && (
-						<Badge variant="secondary" className="gap-1">
-							Search: {search}
-							<button
-								onClick={() => setLocalSearch(null)}
-								className="ml-2 hover:text-cyan-900"
-							>
-								<X className="h-3 w-3" />
-							</button>
-						</Badge>
-					)}
-					{localselectedCategories &&
-						localselectedCategories.map((cat) => (
-							<Badge key={cat} variant="secondary" className="gap-1">
-								Category: {cat}
-								<Button
-									onClick={() => toggleCategory(cat)}
-									className="ml-2 hover:text-cyan-900"
-								>
-									<X className="h-3 w-3" />
-								</Button>
-							</Badge>
-						))}
-					{localMinRecords && (
-						<Badge variant="secondary" className="gap-1">
-							Min Records: {Number.parseInt(localMinRecords).toLocaleString()}
-							<button
-								onClick={() => setMinRecords(null)}
-								className="ml-2 hover:text-cyan-900"
-							>
-								<X className="h-3 w-3" />
-							</button>
-						</Badge>
-					)}
-					{localMinRecords && localMaxRecords !== "500000" && (
-						<Badge variant="secondary" className="gap-1">
-							Max Records: {Number.parseInt(localMaxRecords).toLocaleString()}
-							<Button
-								onClick={() => setMaxRecords(null)}
-								className="ml-2 hover:text-cyan-900"
-							>
-								<X className="h-3 w-3" />
-							</Button>
-						</Badge>
-					)}
-					{localSortBy && localSortBy !== "default" && (
-						<Badge variant="secondary" className="gap-1">
-							Sort:{" "}
-							{sortOptions.find((opt) => opt.value === localSortBy)?.label ||
-								localSortBy.replace("_", " ").toUpperCase()}
-							<button
-								onClick={() => setLocalSortBy("default")}
-								className="ml-2 hover:text-cyan-900"
-							>
-								<X className="h-3 w-3" />
-							</button>
-						</Badge>
+							{page > 1 && (
+								<Badge variant="secondary" className="gap-1 w-fit">
+									<span className="w-fit">
+										<span className="mr-2">Current Page</span>
+										{page}
+									</span>
+									<button
+										onClick={() => setPage(1)}
+										className="ml-2 hover:text-cyan-900"
+									>
+										<X className="h-3 w-3" />
+									</button>
+								</Badge>
+							)}
+							{localMinRecords &&
+								localMaxRecords !== MAX_RECORDS.toString() && (
+									<Badge variant="secondary" className="gap-1 w-fit">
+										<p>
+											<span className="mr-2">Max Records</span>
+											{Number.parseInt(localMaxRecords).toLocaleString()}
+										</p>
+										<button
+											onClick={() => setLocalMaxRecords(MAX_RECORDS.toString())}
+											className="ml-2 hover:text-cyan-900"
+										>
+											<X className="h-3 w-3" />
+										</button>
+									</Badge>
+								)}
+							{localSortBy && localSortBy !== "default" && (
+								<Badge variant="secondary" className="gap-1 w-fit">
+									<p className="w-fit">
+										<span className="mr-2">Sort</span>
+										{sortOptions.find((opt) => opt.value === localSortBy)
+											?.label || localSortBy.replace("_", " ").toUpperCase()}
+									</p>
+									<button
+										onClick={() => setLocalSortBy("default")}
+										className="ml-2 hover:text-cyan-900"
+									>
+										<X className="h-3 w-3" />
+									</button>
+								</Badge>
+							)}
+						</div>
 					)}
 				</div>
-			)}
+				<div className="flex justify-end w-full items-center">
+					{activeFiltersCount > 0 && (
+						<Button
+							variant="outline"
+							onClick={handleClearFilters}
+							className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+						>
+							Clear Filters
+							<X className="ml-2 h-4 w-4" />
+						</Button>
+					)}
+				</div>
+			</div>
 		</div>
 	);
 };
