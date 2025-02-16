@@ -5,6 +5,7 @@ export const LoadingButton = ({
 	children,
 	loading,
 	disabled,
+	type = "button",
 	onClickHandler,
 	...props
 }: {
@@ -12,12 +13,14 @@ export const LoadingButton = ({
 	loading: boolean;
 	onClickHandler?: () => void;
 	disabled?: boolean;
+	type?: "button" | "submit" | "reset";
 }) => (
 	<Button
 		{...props}
 		onClick={onClickHandler}
 		disabled={loading || disabled}
-		className="flex items-center gap-2 disabled:opacity-50"
+		type={type}
+		className="flex items-center gap-2 disabled:opacity-50 w-full"
 	>
 		{loading ? <Loader2 className="w-5 h-5 animate-spin" /> : children}
 	</Button>

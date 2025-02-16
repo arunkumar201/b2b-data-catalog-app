@@ -26,6 +26,7 @@ import { SlidersHorizontal, X } from "lucide-react";
 import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { LogoutButton } from "./LogoutButton";
 
 const sortOptions = [
 	{ value: "date_desc", label: "Newest" },
@@ -36,6 +37,7 @@ export const MAX_RECORDS = 50_000;
 export const MIN_RECORDS = 0;
 
 const ProductFilter = () => {
+	const [isLoading, setIsLoading] = useState(false);
 	const [page, setPage] = useQueryState(
 		"page",
 		parseAsInteger.withDefault(1).withOptions({
@@ -192,6 +194,7 @@ const ProductFilter = () => {
 
 	useEffect(() => {
 		const fetchCategories = async () => {
+			setIsLoading(true);
 			try {
 				const response = await fetch("/api/v1/products/categories");
 				const result = await response.json();
@@ -199,6 +202,8 @@ const ProductFilter = () => {
 			} catch (error) {
 				console.error("Failed to fetch categories:", error);
 				setCategories([]);
+			} finally {
+				setIsLoading(false);
 			}
 		};
 
@@ -207,6 +212,9 @@ const ProductFilter = () => {
 
 	return (
 		<div className="font-mono w-full space-y-4 p-4 bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800">
+			<div className="w-full justify-end">
+				<LogoutButton />
+			</div>
 			<div className="flex flex-col lg:flex-row gap-4 items-center w-full">
 				<div className="flex-1 w-full">
 					<Input
@@ -356,16 +364,20 @@ const ProductFilter = () => {
 
 			<div className="hidden lg:block space-y-4">
 				<div className="flex flex-wrap gap-4">
-					{categories.map((cat) => (
-						<div key={cat} className="flex items-center space-x-2">
-							<Checkbox
-								id={`category-${cat}`}
-								checked={localselectedCategories?.includes(cat.toLowerCase())}
-								onCheckedChange={() => toggleCategory(cat.toLowerCase())}
-							/>
-							<Label htmlFor={`category-${cat}`}>{cat}</Label>
-						</div>
-					))}
+					{!isLoading ? (
+						categories.map((cat) => (
+							<div key={cat} className="flex items-center space-x-2">
+								<Checkbox
+									id={`category-${cat}`}
+									checked={localselectedCategories?.includes(cat.toLowerCase())}
+									onCheckedChange={() => toggleCategory(cat.toLowerCase())}
+								/>
+								<Label htmlFor={`category-${cat}`}>{cat}</Label>
+							</div>
+						))
+					) : (
+						<span className="text-sm">Loading categories...</span>
+					)}
 				</div>
 				<div className="flex space-x-4 items-center">
 					<div className="flex-1">

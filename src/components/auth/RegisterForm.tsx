@@ -16,9 +16,11 @@ import type React from "react";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { ZodError } from "zod";
+import { LoadingButton } from "../LoadingButton";
 
 export const RegisterForm = () => {
 	const router = useRouter();
+	const [isLoading, setIsLoading] = useState(false);
 	const [formData, setFormData] = useState<TRegisterUser>({
 		firstName: "",
 		lastName: "",
@@ -35,6 +37,7 @@ export const RegisterForm = () => {
 		e.preventDefault();
 		setErrors({});
 		setSubmitError("");
+		setIsLoading(true);
 
 		try {
 			const validatedData = ZRegisterUser.parse(formData);
@@ -54,6 +57,7 @@ export const RegisterForm = () => {
 			if (!response.ok) {
 				toast.error(data.message);
 				setSubmitError(data.message);
+				setIsLoading(false);
 				return;
 			}
 			toast.success(data.message);
@@ -78,6 +82,8 @@ export const RegisterForm = () => {
 				toast.error("An unexpected error occurred");
 				setSubmitError("An unexpected error occurred");
 			}
+		} finally {
+			setIsLoading(false);
 		}
 	};
 
@@ -146,9 +152,9 @@ export const RegisterForm = () => {
 						error={errors.confirmPassword}
 						placeholder="Confirm your password"
 					/>
-					<Button type="submit" className="w-full">
+					<LoadingButton type="submit" loading={isLoading}>
 						Register
-					</Button>
+					</LoadingButton>
 				</form>
 			</CardContent>
 		</Card>

@@ -21,9 +21,11 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { ZodError } from "zod";
 import { FormField } from "../FormField";
+import { LoadingButton } from "../LoadingButton";
 
 export const LoginForm = () => {
 	const router = useRouter();
+	const [isLoading, setIsLoading] = useState(false);
 	const [formData, setFormData] = useState<LoginFormData>({
 		email: "",
 		password: "",
@@ -35,6 +37,7 @@ export const LoginForm = () => {
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
+		setIsLoading(true);
 		setErrors({});
 		setSubmitError("");
 
@@ -50,6 +53,7 @@ export const LoginForm = () => {
 			if (!result?.ok) {
 				toast.error("Failed to sign in");
 				setSubmitError("Invalid credentials");
+				setIsLoading(false);
 				return;
 			}
 
@@ -69,6 +73,8 @@ export const LoginForm = () => {
 			} else if (error instanceof Error) {
 				setSubmitError(error.message || "An error occurred");
 			}
+		} finally {
+			setIsLoading(false);
 		}
 	};
 
@@ -105,9 +111,9 @@ export const LoginForm = () => {
 						error={errors.password}
 						placeholder="Enter your password"
 					/>
-					<Button type="submit" className="w-full">
+					<LoadingButton type="submit" loading={isLoading}>
 						Login
-					</Button>
+					</LoadingButton>
 				</form>
 			</CardContent>
 		</Card>

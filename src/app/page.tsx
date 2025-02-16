@@ -1,17 +1,12 @@
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import { authOptions } from "@/lib/authOption";
+import { getServerSession } from "next-auth";
+import { redirect } from "next/navigation";
 
-export default function Home() {
-	return (
-		<div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-			<h1>Welcome to B2B Data Catalog App</h1>
-			<Link href="/auth/login">
-				<Button>Login</Button>
-			</Link>
+export default async function Home() {
+	const session = await getServerSession(authOptions);
+	if (!session) {
+		redirect("/auth/login");
+	}
 
-			<Link href="/auth/register">
-				<Button>Register</Button>
-			</Link>
-		</div>
-	);
+	redirect(`/dashboard/${session.user.id}`);
 }
