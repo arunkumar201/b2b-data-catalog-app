@@ -22,18 +22,24 @@ const AuthLayout = async ({ children }: { children: React.ReactNode }) => {
 					<nav className="flex flex-row items-center space-x-4">
 						<ul className="flex space-x-4">
 							<li>
-								<Button className="text-primary" variant={"outline"}>
-									<Link href="/auth/register" className="hover:underline">
+								<Link href="/auth/register" className="hover:underline">
+									<Button
+										className="text-primary hover:underline"
+										variant={"outline"}
+									>
 										Register
-									</Link>
-								</Button>
+									</Button>
+								</Link>
 							</li>
 							<li>
-								<Button className="text-primary" variant={"outline"}>
-									<Link href="/auth/login" className="hover:underline">
+								<Link href="/auth/login" className="hover:underline">
+									<Button
+										className="text-primary hover:underline"
+										variant={"outline"}
+									>
 										Login
-									</Link>
-								</Button>
+									</Button>
+								</Link>
 							</li>
 						</ul>
 					</nav>

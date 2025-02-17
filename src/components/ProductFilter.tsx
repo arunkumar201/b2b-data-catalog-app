@@ -24,7 +24,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { wait } from "@/utils";
 import { SlidersHorizontal, X } from "lucide-react";
 import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import toast from "react-hot-toast";
 import { LogoutButton } from "./LogoutButton";
 
@@ -38,35 +38,41 @@ export const MIN_RECORDS = 0;
 
 const ProductFilter = () => {
 	const [isLoading, setIsLoading] = useState(false);
+	const [isTransitioning, startTransition] = useTransition();
 	const [page, setPage] = useQueryState(
 		"page",
 		parseAsInteger.withDefault(1).withOptions({
 			shallow: false,
 			throttleMs: 100,
+			startTransition,
 		}),
 	);
 	const [search, setSearch] = useQueryState(
 		"q",
 		parseAsString.withDefault("").withOptions({
 			shallow: false,
+			startTransition,
 		}),
 	);
 	const [minRecords, setMinRecords] = useQueryState(
 		"minRecords",
 		parseAsString.withDefault("0").withOptions({
 			shallow: false,
+			startTransition,
 		}),
 	);
 	const [maxRecords, setMaxRecords] = useQueryState(
 		"maxRecords",
 		parseAsString.withDefault(MAX_RECORDS.toString()).withOptions({
 			shallow: false,
+			startTransition,
 		}),
 	);
 	const [sortBy, setSortBy] = useQueryState(
 		"sort",
 		parseAsString.withDefault("default").withOptions({
 			shallow: false,
+			startTransition,
 		}),
 	);
 	const [categories, setCategories] = useState<string[]>([]);
@@ -77,6 +83,7 @@ const ProductFilter = () => {
 			serialize: (value) => value.join(","),
 			defaultValue: [],
 			shallow: false,
+			startTransition,
 		},
 	);
 
@@ -91,6 +98,7 @@ const ProductFilter = () => {
 	const [localselectedCategories, setLocalselectedCategories] = useState(
 		selectedCategories || [],
 	);
+	const isMounted = useRef(false);
 
 	const [isOpen, setIsOpen] = useState(false);
 
@@ -152,6 +160,13 @@ const ProductFilter = () => {
 	}, [maxRecords, minRecords]);
 
 	useEffect(() => {
+		if (!isMounted.current) {
+			isMounted.current = true;
+			return;
+		}
+	}, []);
+
+	useEffect(() => {
 		setSearch(debouncedSearch);
 		setPage(1);
 		setPage(1);
@@ -191,6 +206,29 @@ const ProductFilter = () => {
 			}
 		});
 	};
+	useEffect(() => {
+		// update query state when filters change
+		let id: string | undefined;
+		let timeoutId: string | number | NodeJS.Timeout | undefined;
+		if (isTransitioning && isMounted.current) {
+			id = toast.loading("Loading Products...", {
+				style: {
+					backgroundColor: "#112D4E",
+					color: "#F9F7F7",
+					borderRadius: "9px",
+					padding: "10px",
+					fontSize: "14px",
+					border: "3px solid #DBE2EF",
+					zIndex: 99999999,
+				},
+			});
+		} else {
+			timeoutId = setTimeout(() => {
+				toast.remove(id);
+			}, 400);
+		}
+		return () => clearTimeout(timeoutId);
+	}, [isTransitioning]);
 
 	useEffect(() => {
 		const fetchCategories = async () => {
@@ -287,8 +325,8 @@ const ProductFilter = () => {
 									<h3 className="text-sm font-medium">Record Count Range</h3>
 									<div className="space-y-4">
 										<div>
-											<Label className="text-sm text-gray-500">
-												Min Records:{" "}
+											<Label className="text-sm text-gray-500 w-fit">
+												<span className="mr-2">Min Records</span>
 												{Number.parseInt(
 													localMinRecords || "0",
 												).toLocaleString()}
@@ -296,9 +334,9 @@ const ProductFilter = () => {
 											<Input
 												type="range"
 												min="0"
-												max={MIN_RECORDS}
+												max={MAX_RECORDS}
 												step="500"
-												value={minRecords || "0"}
+												value={localMinRecords || "0"}
 												onChange={(e) => setLocalMinRecords(e.target.value)}
 												className="w-full"
 											/>
@@ -307,15 +345,15 @@ const ProductFilter = () => {
 											<Label className="text-sm text-gray-500">
 												Max Records:{" "}
 												{Number.parseInt(
-													localMaxRecords || "500000",
+													localMaxRecords || "50000",
 												).toLocaleString()}
 											</Label>
 											<Input
 												type="range"
 												min="1"
-												max={MIN_RECORDS}
+												max={MAX_RECORDS}
 												step="500"
-												value={maxRecords || "500000"}
+												value={localMaxRecords || "50000"}
 												onChange={(e) => setLocalMaxRecords(e.target.value)}
 												className="w-full"
 											/>

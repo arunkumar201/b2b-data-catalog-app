@@ -1,7 +1,6 @@
 "use client";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
 import {
 	Card,
 	CardContent,
@@ -74,7 +73,12 @@ export const LoginForm = () => {
 				setSubmitError(error.message || "An error occurred");
 			}
 		} finally {
-			setIsLoading(false);
+			setFormData((prev) => {
+				return { ...prev, password: "", email: "" };
+			});
+			setTimeout(() => {
+				setIsLoading(false);
+			}, 3000);
 		}
 	};
 

@@ -15,7 +15,7 @@ import { useRouter } from "next/navigation";
 import type React from "react";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { ZodError } from "zod";
+import { ZodError, set } from "zod";
 import { LoadingButton } from "../LoadingButton";
 
 export const RegisterForm = () => {
@@ -83,7 +83,12 @@ export const RegisterForm = () => {
 				setSubmitError("An unexpected error occurred");
 			}
 		} finally {
-			setIsLoading(false);
+			setFormData((prev) => {
+				return { ...prev, password: "", confirmPassword: "" };
+			});
+			setTimeout(() => {
+				setIsLoading(false);
+			}, 3000);
 		}
 	};
 
